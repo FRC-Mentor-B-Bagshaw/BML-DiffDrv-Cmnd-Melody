@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 //import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
@@ -40,6 +41,10 @@ public class DriveSubsystem extends SubsystemBase {
   // Create Differential Drive Motor Contorllers
   private final Spark m_leftLeader = new Spark(0);
   private final Spark m_rightLeader = new Spark(1);
+  private final DifferentialDrive m_drive =
+  new DifferentialDrive(m_leftLeader::set, m_rightLeader::set);
+
+
   private final PIDController m_leftPIDController = new PIDController(1, 0, 0);
   private final PIDController m_rightPIDController = new PIDController(1, 0, 0);
 // Gains are for example purposes only - must be determined for your own robot!
@@ -90,6 +95,7 @@ public class DriveSubsystem extends SubsystemBase {
   m_leftEncoder.setMinRate(0.01);
   m_rightEncoder.reset();
   m_leftEncoder.reset();
+  m_rightLeader.setInverted(true);
  
       }
  
@@ -172,14 +178,39 @@ public class DriveSubsystem extends SubsystemBase {
    * @param rot Angular velocity in rad/s.
    */
   public void drive(double xSpeed, double rot) {
-    var wheelSpeeds = m_kinematics.toWheelSpeeds(new ChassisSpeeds(xSpeed, 0.0, rot));
+    var wheelSpeeds = m_kinematics.toWheelSpeeds(new ChassisSpeeds(xSpeed,0,rot));
     setSpeeds(wheelSpeeds);
+  }
+
+  public void arcadeDrive(double fwd, double rot) {
+    m_drive.arcadeDrive(fwd, rot);
+  }
+
+  /**
+   * Controls the left and right sides of the drive directly with voltages.
+   *
+   * @param leftVolts the commanded left output
+   * @param rightVolts the commanded right output
+   */
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    m_leftLeader.setVoltage(leftVolts);
+    m_rightLeader.setVoltage(rightVolts);
+    m_drive.feed();
+
+  }
+    /**
+   * Returns the current wheel speeds of the robot.
+   *
+   * @return The current wheel speeds.
+   */
+   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(m_leftEncoder.getRate(), m_rightEncoder.getRate());
   }
   
  /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
     m_rightEncoder.reset();
-    m_leftEncoder.reset();
+    m_leftEncoder.reset();        
   }
 
   /** Zeroes the heading of the robot. */

@@ -29,10 +29,10 @@ public final class Constants {
     // the robot, rather the allowed maximum speeds
     public static final double kMaxSpeedMetersPerSecond = 4.8;
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
-
-    public static final double kDirectionSlewRate = 1.2; // radians per second
-    public static final double kMagnitudeSlewRate = 1.8; // percent per second (1 = 100%)
-    public static final double kRotationalSlewRate = 2.0; // percent per second (1 = 100%)
+    public static final double ksVolts = 0.52;
+    public static final double kvVoltSecondsPerMeter = 24;
+    public static final double kaVoltSecondsSquaredPerMeter = .43;
+    
 
     // Chassis configuration
     public static final double kTrackWidth = 0.58;
@@ -86,8 +86,8 @@ public final class Constants {
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
-    public static final double kPXController = 1;
-    public static final double kPYController = 1;
+    public static final double kPleftController = 1;
+    public static final double kPrightController = 1;
     public static final double kPThetaController = 1;
 
     // Constraint for the motion profiled robot angle controller

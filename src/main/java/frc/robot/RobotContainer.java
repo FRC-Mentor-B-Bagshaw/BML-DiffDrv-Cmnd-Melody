@@ -5,8 +5,11 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
-//import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -44,6 +47,11 @@ public class RobotContainer {
   // The driver's controller
   XboxController m_XboxController = new XboxController(OIConstants.kXboxControllerPort);
   Joystick m_JoystickController = new Joystick(OIConstants.kJoyStickPort);
+
+  PIDController m_rightPIDController = new PIDController(3.38, 0, 0);
+  PIDController m_leftPIDController = new PIDController(3.38, 0, 0);
+
+
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -119,28 +127,27 @@ public class RobotContainer {
         AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    // SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-    //     exampleTrajectory,
-    //     m_robotDrive::getPose, // Functional interface to feed supplier
-    //     DriveConstants.kDriveKinematics,
-
-    //     // Position controllers
-    //     new PIDController(AutoConstants.kPXController, 0, 0),
-    //     new PIDController(AutoConstants.kPYController, 0, 0),
-    //     thetaController,
-    //     m_robotDrive::setModuleStates,
-    //     m_robotDrive);
+    
+    // Make a DiffDriveRamseteController
+    RamseteCommand ramseteCommand =
+    new RamseteCommand(
+        exampleTrajectory,
+        m_robotDrive::getPose,
+        new RamseteController(),
+        new SimpleMotorFeedforward(DriveConstants.ksVolts,DriveConstants.kvVoltSecondsPerMeter,DriveConstants.kaVoltSecondsSquaredPerMeter),
+        DriveConstants.kDriveKinematics,
+        m_robotDrive::getWheelSpeeds,
+        m_leftPIDController,
+        m_rightPIDController,
+        m_robotDrive::tankDriveVolts,
+        m_robotDrive);
 
     // Reset odometry to the starting pose of the trajectory.
     m_robotDrive.resetOdometry(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return new RunCommand(
-            () -> m_robotDrive.resetEncoders(),
-            m_robotDrive);
-
-       
-
+    // Run path following command, then stop at the end.
+    return ramseteCommand.andThen(() -> m_robotDrive.drive(0, 0));
     
   }
 }
